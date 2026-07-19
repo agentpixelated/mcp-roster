@@ -36,7 +36,7 @@ func DoctorCmd(jsonOutput, skipURLCheck bool, clientFilter string) int {
 	red := color.New(color.FgRed)
 	bold := color.New(color.Bold)
 
-	bold.Println("mcp-hub doctor v0.1")
+	bold.Println("mcp-roster doctor v0.1")
 	fmt.Println()
 
 	bold.Printf("Scanning... found %d config files, %d not present (skipped)\n",
