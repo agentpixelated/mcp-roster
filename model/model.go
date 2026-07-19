@@ -56,34 +56,21 @@ type DiscoveryError struct {
 
 // DuplicateGroup holds servers across clients that share a name but differ in config.
 type DuplicateGroup struct {
-	Name    string          `json:"name"`
-	Entries []DuplicateEntry `json:"entries"`
-}
-
-// DuplicateEntry is one occurrence of a duplicate server name.
-type DuplicateEntry struct {
-	Server   model.MCPServer `json:"server"`
-	Identical bool           `json:"identical"`
-	Diff     string          `json:"diff,omitempty"`
+	Name    string      `json:"name"`
+	Servers []MCPServer `json:"servers"`
+	Status  string      `json:"status"` // "identical" | "divergent"
 }
 
 // DoctorReport is the output of `mcp-roster doctor`.
 type DoctorReport struct {
-	Checks  []CheckResult `json:"checks"`
-	Summary Summary        `json:"summary"`
+	Inventory  Inventory        `json:"inventory"`
+	Duplicates []DuplicateGroup `json:"duplicate_groups"`
+	Checks     []DoctorCheck    `json:"checks"`
 }
 
-// CheckResult is the outcome of running one diagnostic check.
-type CheckResult struct {
-	Name     string `json:"name"`
-	Status   string `json:"status"` // pass, fail, warn
-	Message  string `json:"message"`
-	Detail   string `json:"detail,omitempty"`
-}
-
-// Summary aggregates check results.
-type Summary struct {
-	Passed  int `json:"passed"`
-	Failed  int `json:"failed"`
-	Warning int `json:"warning"`
+// DoctorCheck is a single pass/fail diagnostic.
+type DoctorCheck struct {
+	Name   string `json:"name"`
+	Status string `json:"status"` // "pass", "warn", "fail"
+	Detail string `json:"detail"`
 }
