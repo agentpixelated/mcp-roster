@@ -1,6 +1,6 @@
 package model
 
-// Transport describes how mcp-hub will connect to a server.
+// Transport describes how mcp-roster will connect to a server.
 type Transport string
 
 const (
@@ -56,21 +56,34 @@ type DiscoveryError struct {
 
 // DuplicateGroup holds servers across clients that share a name but differ in config.
 type DuplicateGroup struct {
-	Name    string      `json:"name"`
-	Servers []MCPServer `json:"servers"`
-	Status  string      `json:"status"` // "identical" | "divergent"
+	Name    string          `json:"name"`
+	Entries []DuplicateEntry `json:"entries"`
 }
 
-// DoctorReport is the output of `mcp-hub doctor`.
+// DuplicateEntry is one occurrence of a duplicate server name.
+type DuplicateEntry struct {
+	Server   model.MCPServer `json:"server"`
+	Identical bool           `json:"identical"`
+	Diff     string          `json:"diff,omitempty"`
+}
+
+// DoctorReport is the output of `mcp-roster doctor`.
 type DoctorReport struct {
-	Inventory  Inventory        `json:"inventory"`
-	Duplicates []DuplicateGroup `json:"duplicate_groups"`
-	Checks     []DoctorCheck    `json:"checks"`
+	Checks  []CheckResult `json:"checks"`
+	Summary Summary        `json:"summary"`
 }
 
-// DoctorCheck is a single pass/fail diagnostic.
-type DoctorCheck struct {
-	Name   string `json:"name"`
-	Status string `json:"status"` // "pass", "warn", "fail"
-	Detail string `json:"detail"`
+// CheckResult is the outcome of running one diagnostic check.
+type CheckResult struct {
+	Name     string `json:"name"`
+	Status   string `json:"status"` // pass, fail, warn
+	Message  string `json:"message"`
+	Detail   string `json:"detail,omitempty"`
+}
+
+// Summary aggregates check results.
+type Summary struct {
+	Passed  int `json:"passed"`
+	Failed  int `json:"failed"`
+	Warning int `json:"warning"`
 }

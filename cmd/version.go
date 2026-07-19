@@ -14,6 +14,6 @@ var (
 
 // VersionCmd prints version information.
 func VersionCmd() int {
-	fmt.Fprintf(os.Stdout, "mcp-hub %s (commit: %s, built: %s)\n", version, commit, buildDate)
+	fmt.Fprintf(os.Stdout, "mcp-roster %s (commit: %s, built: %s)\n", version, commit, buildDate)
 	return 0
 }
