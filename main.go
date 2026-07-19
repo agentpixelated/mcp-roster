@@ -101,7 +101,7 @@ func run() int {
 		return cmd.VersionCmd()
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n", subCmd)
-		fmt.Fprintf(os.Stderr, "usage: mcp-hub [list|dedup|doctor|version] [flags]\n")
+		fmt.Fprintf(os.Stderr, "usage: mcp-roster [list|dedup|doctor|version] [flags]\n")
 		return 2
 	}
 }
