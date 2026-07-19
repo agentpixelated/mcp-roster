@@ -1,4 +1,4 @@
-# mcp-hub v0.1 — Technical Architecture Spec
+# mcp-roster v0.1 — Technical Architecture Spec
 
 > A cross-platform Go CLI that discovers, normalizes, and audits MCP configurations across all major AI coding tools.
 
@@ -8,7 +8,7 @@
 
 Developers using multiple AI coding tools (Hermes, Claude Desktop, Claude Code, Cursor, VS Code, Codex CLI) end up with **6+ separate MCP config files** using **4 different formats** (JSON, TOML, YAML) with **inconsistent root keys** (`mcpServers`, `servers`, `mcp_servers`) and **different transport type naming**. There is no unified view, no duplicate detection, and no safe way to audit what's configured.
 
-**mcp-hub** solves this with a single `go install` binary: read-only discovery, normalization, duplicate detection, and a non-invasive `doctor` command.
+**mcp-roster** solves this with a single `go install` binary: read-only discovery, normalization, duplicate detection, and a non-invasive `doctor` command.
 
 ---
 
@@ -47,7 +47,7 @@ Developers using multiple AI coding tools (Hermes, Claude Desktop, Claude Code, 
 This is the internal normalized representation. Every parser maps tool-specific configs into this shape.
 
 ```go
-// Transport describes how mcp-hub will connect to a server (for doctor).
+// Transport describes how mcp-roster will connect to a server (for doctor).
 type Transport string
 
 const (
@@ -121,7 +121,7 @@ type DuplicateGroup struct {
 ### 3.4 Doctor Result
 
 ```go
-// DoctorReport is the output of `mcp-hub doctor`.
+// DoctorReport is the output of `mcp-roster doctor`.
 type DoctorReport struct {
     Inventory   Inventory         `json:"inventory"`
     Duplicates  []DuplicateGroup  `json:"duplicates"`
@@ -200,12 +200,12 @@ Output: []MCPServer
 
 ## 5. Commands
 
-### 5.1 `mcp-hub list`
+### 5.1 `mcp-roster list`
 
 **Behavior:** Discover all configs, normalize, print a table.
 
 ```
-$ mcp-hub list
+$ mcp-roster list
 
 NAME             TRANSPORT  CLIENT          SCOPE     STATUS
 ───────────────────────────────────────────────────────────────
@@ -224,12 +224,12 @@ filesystem       stdio      codex           global    enabled
 - `--client <name>` — filter to one client
 - `--scope <global|project>` — filter by scope
 
-### 5.2 `mcp-hub dedup`
+### 5.2 `mcp-roster dedup`
 
 **Behavior:** Run `list`, then group by server name and report duplicates.
 
 ```
-$ mcp-hub dedup
+$ mcp-roster dedup
 
 DUPLICATE: github (3 entries)
   ✓ claude-desktop/global  — identical config
@@ -251,7 +251,7 @@ No other duplicates found.
 **Flags:**
 - `--json` — output as `[]DuplicateGroup`
 
-### 5.3 `mcp-hub doctor`
+### 5.3 `mcp-roster doctor`
 
 **Behavior:** Non-invasive audit. Checks config health **without starting any MCP servers**.
 
@@ -268,9 +268,9 @@ Checks performed:
 | `config-location-known` | Reports which expected config files were not found (informational) | ✓ read-only |
 
 ```
-$ mcp-hub doctor
+$ mcp-roster doctor
 
-mcp-hub doctor v0.1
+mcp-roster doctor v0.1
 
 Scanning 6 clients... found 4 config files, 2 not present (skipped)
 
@@ -303,7 +303,7 @@ SUMMARY
 - `--skip-url-check` — skip HTTP HEAD requests (for air-gapped environments)
 - `--client <name>` — check only one client
 
-### 5.4 `mcp-hub version`
+### 5.4 `mcp-roster version`
 
 Print version, commit, build date.
 
@@ -311,7 +311,7 @@ Print version, commit, build date.
 
 ## 6. Safe MVP Boundaries (v0.1)
 
-### What mcp-hub DOES:
+### What mcp-roster DOES:
 - ✅ Read config files from known locations
 - ✅ Parse JSON, TOML, YAML into a canonical model
 - ✅ Display a unified inventory
@@ -320,7 +320,7 @@ Print version, commit, build date.
 - ✅ Run non-invasive doctor checks (no processes spawned, no network beyond HEAD)
 - ✅ Respect `enabled: false` (show as disabled, don't check further)
 
-### What mcp-hub DOES NOT do (explicitly out of scope for v0.1):
+### What mcp-roster DOES NOT do (explicitly out of scope for v0.1):
 - ❌ Modify, write, or sync any config files
 - ❌ Start, stop, or connect to any MCP server process
 - ❌ Execute any user-configured command (only `which`/`where` for existence checks)
@@ -330,10 +330,10 @@ Print version, commit, build date.
 - ❌ Validate MCP protocol compliance (no handshake, no tool listing)
 
 ### Safety guarantees:
-1. **Zero writes** — mcp-hub never opens any config file for writing
+1. **Zero writes** — mcp-roster never opens any config file for writing
 2. **Zero process spawning** — no `exec.Command` for user-configured commands; only `exec.LookPath` for stdio command existence checks
 3. **Zero auth** — no tokens read, no credentials accessed; env var values are never logged
-4. **Idempotent** — running mcp-hub any number of times produces the same output
+4. **Idempotent** — running mcp-roster any number of times produces the same output
 5. **Deterministic** — output is sorted by client name, then server name; no randomness
 
 ---
@@ -341,15 +341,15 @@ Print version, commit, build date.
 ## 7. Project Structure
 
 ```
-mcp-hub/
-├── go.mod                    # module: github.com/<org>/mcp-hub
+mcp-roster/
+├── go.mod                    # module: github.com/<org>/mcp-roster
 ├── go.sum
 ├── main.go                   # entry point, flag parsing, command dispatch
 ├── cmd/
-│   ├── list.go               # mcp-hub list
-│   ├── dedup.go              # mcp-hub dedup
-│   ├── doctor.go             # mcp-hub doctor
-│   └── version.go            # mcp-hub version
+│   ├── list.go               # mcp-roster list
+│   ├── dedup.go              # mcp-roster dedup
+│   ├── doctor.go             # mcp-roster doctor
+│   └── version.go            # mcp-roster version
 ├── model/
 │   └── model.go              # MCPServer, Inventory, ConfigSource, etc.
 ├── parser/
@@ -488,7 +488,7 @@ Parse a server with env vars including `GITHUB_TOKEN: "ghp_real123"` and `DATABA
 - **`--json`:** machine-readable JSON matching the exported Go structs
 
 ### No interactive prompts
-mcp-hub never asks for user input. It runs, prints, exits. This makes it CI-friendly and scriptable.
+mcp-roster never asks for user input. It runs, prints, exits. This makes it CI-friendly and scriptable.
 
 ---
 
@@ -496,9 +496,9 @@ mcp-hub never asks for user input. It runs, prints, exits. This makes it CI-frie
 
 These are explicitly noted for awareness but NOT implemented:
 
-- `mcp-hub sync` — copy a server entry from one client's config to another
-- `mcp-hub init` — scaffold a `.mcp.json` in the current project
-- `mcp-hub connect <server>` — actually start and handshake with an MCP server
+- `mcp-roster sync` — copy a server entry from one client's config to another
+- `mcp-roster init` — scaffold a `.mcp.json` in the current project
+- `mcp-roster connect <server>` — actually start and handshake with an MCP server
 - Plugin system for user-defined client parsers
 - Config file watching / file watcher mode
 - Diff/merge between two specific config files
@@ -510,15 +510,15 @@ These are explicitly noted for awareness but NOT implemented:
 
 ```bash
 # Build for current platform
-go build -o mcp-hub .
+go build -o mcp-roster .
 
 # Cross-compile
-GOOS=linux GOARCH=amd64 go build -o mcp-hub-linux-amd64 .
-GOOS=darwin GOARCH=arm64 go build -o mcp-hub-darwin-arm64 .
-GOOS=windows GOARCH=amd64 go build -o mcp-hub.exe .
+GOOS=linux GOARCH=amd64 go build -o mcp-roster-linux-amd64 .
+GOOS=darwin GOARCH=arm64 go build -o mcp-roster-darwin-arm64 .
+GOOS=windows GOARCH=amd64 go build -o mcp-roster.exe .
 
 # Install via go
-go install github.com/<org>/mcp-hub@latest
+go install github.com/<org>/mcp-roster@latest
 ```
 
 Single binary, no runtime dependencies, no CGo. Distribute via GitHub Releases with checksums.
