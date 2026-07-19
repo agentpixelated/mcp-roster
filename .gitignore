@@ -1,6 +1,6 @@
 # Binaries
-/mcp-hub
-/mcp-hub-*
+/mcp-roster
+/mcp-roster-*
 *.exe
 *.dll
 *.so
